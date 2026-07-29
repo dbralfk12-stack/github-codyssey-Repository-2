@@ -22,9 +22,9 @@ def main():
                 print("⚠️ 잘못된 입력입니다. 1-5 사이의 숫자를 입력하세요.")
                 continue
             
-            # 각 메뉴별 기능 호출 (구현 예정)
+            # 각 메뉴별 기능 호출
             if choice == 1:
-                print("\n[퀴즈 풀기 기능을 곧 구현합니다.]")
+                game.play_quiz()
             elif choice == 2:
                 print("\n[퀴즈 추가 기능을 곧 구현합니다.]")
             elif choice == 3:

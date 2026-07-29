@@ -89,6 +89,51 @@ class QuizGame:
             Quiz("파이썬에서 예외(에러)를 처리하기 위해 사용하는 기본 구문은?", ["try-except", "catch-throw", "if-else", "switch-case"], 1)
         ]
         
+    def play_quiz(self):
+        """퀴즈 풀기 기능을 수행합니다."""
+        if not self.quizzes:
+            print("\n⚠️ 등록된 퀴즈가 없습니다. 퀴즈를 먼저 추가해주세요.")
+            return
+            
+        print(f"\n📝 퀴즈를 시작합니다! (총 {len(self.quizzes)}문제)\n" + "-"*40)
+        
+        score = 0
+        for idx, quiz in enumerate(self.quizzes, 1):
+            quiz.display()
+            
+            while True:
+                try:
+                    user_input = input("\n정답 입력: ").strip()
+                    if not user_input:
+                        print("⚠️ 입력값이 없습니다. 숫자를 입력해주세요.")
+                        continue
+                    
+                    answer_num = int(user_input)
+                    if answer_num < 1 or answer_num > 4:
+                        print("⚠️ 1에서 4 사이의 숫자를 입력해주세요.")
+                        continue
+                        
+                    if quiz.check_answer(answer_num):
+                        print("✅ 정답입니다!")
+                        score += 1
+                    else:
+                        print(f"❌ 오답입니다! (정답: {quiz.answer}번)")
+                    
+                    print("-" * 40)
+                    break
+                    
+                except ValueError:
+                    print("⚠️ 잘못된 입력입니다. 숫자로만 입력해주세요.")
+                    
+        print("\n" + "="*40)
+        print(f"🏆 결과: {len(self.quizzes)}문제 중 {score}문제 정답! ({(score/len(self.quizzes))*100:.0f}점)")
+        
+        if score > self.best_score:
+            print("🎉 새로운 최고 점수입니다!")
+            self.best_score = score
+            self.save_state()
+        print("="*40)
+
     def print_menu(self):
         """메뉴 화면을 출력합니다."""
         print("\n" + "="*40)
