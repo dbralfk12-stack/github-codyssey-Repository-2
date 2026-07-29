@@ -182,6 +182,15 @@ class QuizGame:
             print(f"[{idx}] {quiz.question}")
         print("-" * 40)
 
+    def check_score(self):
+        """저장된 최고 점수를 확인합니다."""
+        print("\n" + "="*40)
+        if self.best_score > 0:
+            print(f"🏆 현재 최고 점수: {self.best_score}점")
+        else:
+            print("아직 기록된 점수가 없습니다. 퀴즈를 풀어보세요!")
+        print("="*40)
+
     def print_menu(self):
         """메뉴 화면을 출력합니다."""
         print("\n" + "="*40)

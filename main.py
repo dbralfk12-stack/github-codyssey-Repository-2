@@ -30,7 +30,7 @@ def main():
             elif choice == 3:
                 game.list_quizzes()
             elif choice == 4:
-                print("\n[점수 확인 기능을 곧 구현합니다.]")
+                game.check_score()
             elif choice == 5:
                 print("\n게임을 안전하게 종료합니다. 안녕히 가세요!")
                 break
