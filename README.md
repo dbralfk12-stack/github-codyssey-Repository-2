@@ -74,12 +74,29 @@ python main.py
 
 ### 💻 개발 환경 및 버전
 - **Python 버전 확인:** `(터미널에서 python --version 실행 화면)`
+- <img width="724" height="90" alt="7" src="https://github.com/user-attachments/assets/6d120a2d-ae7e-4508-b828-efb7c46b00f2" />
+
 - **VS Code 탐색기 뷰:** `(코드 파일들이 열려있는 VS Code 화면)`
+- <img width="1912" height="1288" alt="8" src="https://github.com/user-attachments/assets/b7c9c076-9697-4c7e-b00e-ff5d0f5014a8" />
+
 - **Git 커밋 로그:** `(git log --oneline --graph 실행 화면)`
+<img width="850" height="1064" alt="6" src="https://github.com/user-attachments/assets/6b094df5-8b85-4c34-b604-a5b6e24b62ab" />
 
 ### 🎮 프로그램 실행 결과
 - **메뉴 화면:** `(프로그램 초기 구동 화면)`
+- <img width="756" height="356" alt="1" src="https://github.com/user-attachments/assets/c8eed5b1-decc-45a0-ab73-d8541fe3801e" />
+
 - **퀴즈 풀기:** `(1번 메뉴 - 문제 풀이 진행 화면)`
+  <img width="676" height="362" alt="4" src="https://github.com/user-attachments/assets/27428fb1-9117-435a-9dbe-ec93d384978c" />
+
 - **점수 확인:** `(4번 메뉴 - 100점 및 최고 점수 갱신 화면)`
+- ![Uploading 4.png…]()
+<img width="740" height="550" alt="5" src="https://github.com/user-attachments/assets/c2f24fc4-df82-4c42-96ae-122fabe24842" />
+
 - **퀴즈 추가:** `(2번 메뉴 - 새로운 퀴즈 입력 화면)`
+- <img width="700" height="372" alt="2" src="https://github.com/user-attachments/assets/a7c1b0bd-c15f-43d2-be7c-f823659c3dc4" />
+
 - **퀴즈 목록:** `(3번 메뉴 - 6문제가 모두 출력된 화면)`
+
+- <img width="850" height="490" alt="3" src="https://github.com/user-attachments/assets/26754659-da60-443d-99cb-2f95ee71cf4f" />
+
