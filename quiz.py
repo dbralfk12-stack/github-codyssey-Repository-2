@@ -1,3 +1,6 @@
+import json
+import os
+
 class Quiz:
     def __init__(self, question, choices, answer):
         """
@@ -25,7 +28,56 @@ class QuizGame:
         """게임 전체를 관리하는 클래스"""
         self.quizzes = []
         self.best_score = 0
-        self.load_default_quizzes()
+        self.state_file = "state.json"
+        self.load_state()
+        
+    def load_state(self):
+        """state.json 파일에서 데이터를 불러옵니다. 실패 시 기본 데이터를 로드합니다."""
+        if not os.path.exists(self.state_file):
+            print("📂 저장된 데이터가 없습니다. 기본 퀴즈 데이터를 불러옵니다.")
+            self.load_default_quizzes()
+            return
+
+        try:
+            with open(self.state_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                
+            self.best_score = data.get("best_score", 0)
+            
+            # JSON 딕셔너리를 다시 Quiz 객체 리스트로 변환
+            quiz_data_list = data.get("quizzes", [])
+            for q_data in quiz_data_list:
+                quiz = Quiz(q_data["question"], q_data["choices"], q_data["answer"])
+                self.quizzes.append(quiz)
+                
+            print(f"📂 저장된 데이터를 불러왔습니다. (퀴즈 {len(self.quizzes)}개, 최고점수 {self.best_score}점)")
+            
+        except (json.JSONDecodeError, KeyError, Exception):
+            print("⚠️ 데이터 파일이 손상되었습니다. 기본 데이터로 복구합니다.")
+            self.quizzes = []
+            self.best_score = 0
+            self.load_default_quizzes()
+
+    def save_state(self):
+        """현재 퀴즈 목록과 최고 점수를 state.json에 저장합니다."""
+        data = {
+            "best_score": self.best_score,
+            "quizzes": []
+        }
+        
+        # Quiz 객체 리스트를 JSON 직렬화 가능한 딕셔너리로 변환
+        for quiz in self.quizzes:
+            data["quizzes"].append({
+                "question": quiz.question,
+                "choices": quiz.choices,
+                "answer": quiz.answer
+            })
+            
+        try:
+            with open(self.state_file, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"⚠️ 데이터 저장 중 오류가 발생했습니다: {e}")
         
     def load_default_quizzes(self):
         """기본 파이썬 상식 퀴즈 5개를 메모리에 로드합니다."""
