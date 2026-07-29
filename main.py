@@ -26,7 +26,7 @@ def main():
             if choice == 1:
                 game.play_quiz()
             elif choice == 2:
-                print("\n[퀴즈 추가 기능을 곧 구현합니다.]")
+                game.add_quiz()
             elif choice == 3:
                 print("\n[퀴즈 목록 확인 기능을 곧 구현합니다.]")
             elif choice == 4:

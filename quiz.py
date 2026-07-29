@@ -133,6 +133,43 @@ class QuizGame:
             self.best_score = score
             self.save_state()
         print("="*40)
+        
+    def add_quiz(self):
+        """새로운 퀴즈를 입력받고 목록에 추가합니다."""
+        print("\n📌 새로운 퀴즈를 추가합니다.")
+        
+        question = input("\n문제를 입력하세요: ").strip()
+        if not question:
+            print("⚠️ 빈 값은 입력할 수 없습니다. 퀴즈 추가를 취소합니다.")
+            return
+            
+        choices = []
+        for i in range(1, 5):
+            choice = input(f"선택지 {i}: ").strip()
+            if not choice:
+                print("⚠️ 빈 값은 입력할 수 없습니다. 퀴즈 추가를 취소합니다.")
+                return
+            choices.append(choice)
+            
+        while True:
+            try:
+                answer_str = input("정답 번호 (1-4): ").strip()
+                if not answer_str:
+                    print("⚠️ 입력값이 없습니다. 1-4 사이의 숫자를 입력해주세요.")
+                    continue
+                    
+                answer = int(answer_str)
+                if answer < 1 or answer > 4:
+                    print("⚠️ 1에서 4 사이의 숫자를 입력해주세요.")
+                    continue
+                break
+            except ValueError:
+                print("⚠️ 잘못된 입력입니다. 숫자로만 입력해주세요.")
+                
+        new_quiz = Quiz(question, choices, answer)
+        self.quizzes.append(new_quiz)
+        self.save_state()
+        print("\n✅ 퀴즈가 성공적으로 추가되었습니다!")
 
     def print_menu(self):
         """메뉴 화면을 출력합니다."""
