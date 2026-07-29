@@ -28,7 +28,7 @@ def main():
             elif choice == 2:
                 game.add_quiz()
             elif choice == 3:
-                print("\n[퀴즈 목록 확인 기능을 곧 구현합니다.]")
+                game.list_quizzes()
             elif choice == 4:
                 print("\n[점수 확인 기능을 곧 구현합니다.]")
             elif choice == 5:

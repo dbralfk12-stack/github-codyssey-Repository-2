@@ -171,6 +171,17 @@ class QuizGame:
         self.save_state()
         print("\n✅ 퀴즈가 성공적으로 추가되었습니다!")
 
+    def list_quizzes(self):
+        """저장된 퀴즈 목록을 출력합니다."""
+        if not self.quizzes:
+            print("\n⚠️ 등록된 퀴즈가 없습니다.")
+            return
+            
+        print(f"\n📋 등록된 퀴즈 목록 (총 {len(self.quizzes)}개)\n" + "-"*40)
+        for idx, quiz in enumerate(self.quizzes, 1):
+            print(f"[{idx}] {quiz.question}")
+        print("-" * 40)
+
     def print_menu(self):
         """메뉴 화면을 출력합니다."""
         print("\n" + "="*40)
