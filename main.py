@@ -1,16 +1,11 @@
 import sys
+from quiz import QuizGame
 
-def main_menu():
+def main():
+    game = QuizGame()
+    
     while True:
-        print("\n" + "="*40)
-        print("        🎯 나만의 퀴즈 게임 🎯")
-        print("="*40)
-        print("1. 퀴즈 풀기")
-        print("2. 퀴즈 추가")
-        print("3. 퀴즈 목록")
-        print("4. 점수 확인")
-        print("5. 종료")
-        print("="*40)
+        game.print_menu()
         
         try:
             choice_str = input("선택: ").strip()
@@ -48,4 +43,4 @@ def main_menu():
             sys.exit(0)
 
 if __name__ == "__main__":
-    main_menu()
+    main()
