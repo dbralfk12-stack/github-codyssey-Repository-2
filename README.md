@@ -14,20 +14,20 @@ Python 기초 문법, 객체 지향 프로그래밍(OOP), JSON 파일 입출력 
 단일 모듈로 구성될 경우 발생할 수 있는 유지보수 한계를 극복하기 위해, 역할과 책임에 따라 클래스를 분리하여 설계했습니다.
 * **Quiz 클래스:** 개별 문제에 대한 내용, 선택지, 정답 번호를 관리하는 데이터 객체입니다.
   ```python
-  class Quiz:
-      def __init__(self, question, choices, answer):
-          self.question = question
-          self.choices = choices
-          self.answer = answer
+  class Quiz: # "앞으로 'Quiz'라는 이름의 붕어빵 기계(틀)를 만들 거야!"
+      def __init__(self, question, choices, answer): # 붕어빵이 처음 만들어질 때 무조건 필요한 3가지 재료
+          self.question = question # 첫 번째 재료: 질문 내용을 채워 넣어라
+          self.choices = choices   # 두 번째 재료: 4개의 선택지를 채워 넣어라
+          self.answer = answer     # 세 번째 재료: 정답 번호를 채워 넣어라
   ```
 * **QuizGame 클래스:** 문제 출제, 점수 계산, 데이터 입출력 등 핵심 비즈니스 로직을 담당합니다.
   ```python
-  class QuizGame:
-      def __init__(self):
-          self.quizzes = []
+  class QuizGame: # "게임 전체를 관리하는 더 큰 붕어빵 기계를 만들 거야!"
+      def __init__(self): # 기계가 처음 설치될 때 하는 기본 세팅
+          self.quizzes = [] # 퀴즈들을 담을 빈 바구니 준비
           self.best_score = 0
           self.state_file = "state.json"
-          self.load_state()
+          self.load_state() # "과거에 저장해둔 공책(파일)을 먼저 읽어와라!"
           
       def play_quiz(self):
           # 퀴즈 진행 및 점수 계산 로직
@@ -35,12 +35,12 @@ Python 기초 문법, 객체 지향 프로그래밍(OOP), JSON 파일 입출력 
   ```
 * **main.py:** 사용자 입력 처리 및 터미널 UI 렌더링을 담당하는 엔트리 포인트입니다.
   ```python
-  def main():
-      game = QuizGame()
-      while True:
-          game.print_menu()
+  def main(): # "이제부터 main이라는 이름의 작업 지시서를 만들 거야!"
+      game = QuizGame() # 가져온 도면으로 실제 붕어빵 기계를 한 대 설치함
+      while True: # "밑에 있는 일들을 무한히 계속 반복해!" (게임 루프)
+          game.print_menu() # 메뉴판 출력 버튼을 누름
           choice = input("선택: ")
-          # 입력값에 따른 QuizGame 메서드 호출 (UI와 로직의 분리)
+          # 입력값에 따른 기계의 각 버튼을 누름 (UI와 로직의 분리)
           ...
   ```
 * **함수 기반 구현과의 비교 (클래스 도입 장점):** 
