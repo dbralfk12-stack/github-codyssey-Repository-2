@@ -171,24 +171,31 @@ $ python main.py
 **예외 처리가 적용된 파일 로드 방어 코드 (`quiz.py` 발췌):**
 ```python
 def load_state(self):
-    # 1. 파일이 아예 존재하지 않는 경우 (삭제됨 등) 방어
+    # 1. 예외 케이스 방어: 로컬에 데이터 파일이 물리적으로 부재한 경우
     if not os.path.exists(self.state_file):
         print("📂 저장된 데이터가 없습니다. 기본 퀴즈 데이터를 불러옵니다.")
-        self.load_default_quizzes()
+        self.load_default_quizzes() # Fallback: 내장 퀴즈 데이터 초기 적재
         return
 
     try:
-        # 2. 파일은 존재하나 데이터가 깨진 경우 로드 시도
+        # 2. 데이터 영속성 계층 접근 및 역직렬화(Deserialization) 시도
         with open(self.state_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        # (...정상 데이터 처리 로직...)
+        # (...정상 데이터 파싱 및 객체 매핑 로직...)
             
+    # 3. 복합 예외 처리 (파일 손상, JSON 문법 오류, 필수 Key 누락 등)
     except (json.JSONDecodeError, KeyError, Exception):
-        # 3. JSON 파싱 에러 발생 시 프로그램 튕김을 막고 자동 초기화
+        # 시스템 크래시(Crash) 방지 및 무중단 상태 복구 처리
         print("⚠️ 데이터 파일이 손상되었습니다. 기본 데이터로 복구합니다.")
-        self.quizzes = []
-        self.load_default_quizzes()
+        self.quizzes = [] # 오염된 메모리 상태(State) 초기화
+        self.load_default_quizzes() # 서비스 연속성을 위한 기본 데이터 강제 적재
 ```
+
+**📝 핵심 아키텍처 보충 설명 (방어적 프로그래밍과 Fail-safe 원칙):**
+위 코드는 런타임 환경에서 발생할 수 있는 치명적 예외 상황(Edge Cases)을 3단계로 나누어 차단하는 **방어적 프로그래밍(Defensive Programming)**의 모범 사례를 적용했습니다.
+* **1단계 (사전 차단):** 가장 흔한 변수인 '파일 부재' 상황을 `os.path.exists()`를 통해 OS 레벨에서 1차 검증함으로써, 불필요하고 위험한 I/O(파일 열기) 시도를 원천 차단합니다.
+* **2단계 (안전한 자원 관리):** `with open(...)` 컨텍스트 매니저를 사용하여, 파일을 읽는 도중 예기치 못한 인터럽트가 발생하더라도 OS 자원(File Descriptor)이 메모리 누수 없이 안전하게 반환(Close)되도록 보장합니다.
+* **3단계 (Zero-Downtime 보장):** 사용자가 메모장으로 `state.json`을 직접 수정하다가 문법을 틀리는 등 데이터 구조가 완전히 훼손(`JSONDecodeError`)되었을 때의 대처입니다. 프로그램이 치명적 오류를 내며 뻗어버리는(Crash) 대신, 즉시 메모리를 비우고(`self.quizzes = []`) 깨끗한 기본 데이터를 덮어씌웁니다. 이를 통해 어떠한 악조건 속에서도 **시스템이 멈추지 않고 사용자에게 정상적인 서비스를 계속 제공(Fail-safe)**할 수 있도록 견고하게 설계했습니다.
 
 ### 2.5 데이터 안정성 및 확장성 아키텍처 설계
 현재 구현된 구조에서 한 단계 더 나아가 실제 상용 서비스 레벨로 고도화하기 위한 아키텍처 구상안입니다.
