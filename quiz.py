@@ -1,5 +1,7 @@
 import json # 텍스트(JSON)를 파이썬의 번역기로 바꿔주는 도구 가져오기
 import os   # 내 컴퓨터의 파일(폴더) 시스템을 다루는 도구 가져오기
+import shutil # 파일 복사를 위한 도구 가져오기
+from helpers import read_int, read_nonempty # 입력 검증 모듈 가져오기
 
 class Quiz: # "앞으로 'Quiz'라는 이름의 붕어빵 기계(틀)를 만들 거야!" (퀴즈 문제 1개를 찍어내는 틀)
     def __init__(self, question, choices, answer): # 붕어빵이 처음 만들어질 때 무조건 필요한 3가지 재료
@@ -29,34 +31,39 @@ class QuizGame: # "이번엔 'QuizGame'이라는 게임 전체를 관리하는 �
         self.quizzes = [] # 아직 문제는 없으니 빈 바구니(리스트)를 하나 준비해둬
         self.best_score = 0 # 최고 점수는 일단 0점으로 세팅
         self.state_file = "state.json" # 데이터를 저장할 공책(파일) 이름은 state.json으로 정함
+        self.backup_file = "state.json.bak" # 만약을 대비한 백업 공책 이름
         self.load_state() # "기계 설치가 끝나면, 과거에 저장해둔 공책(파일)을 먼저 읽어와라!"
         
     def load_state(self): # '과거 기록 불러오기' 기능
-        """state.json 파일에서 데이터를 불러옵니다. 실패 시 기본 데이터를 로드합니다."""
-        if not os.path.exists(self.state_file): # 만약(if) 내 컴퓨터에 공책(state_file)이 아예 없다면(not)
-            print("📂 저장된 데이터가 없습니다. 기본 퀴즈 데이터를 불러옵니다.")
-            self.load_default_quizzes() # 그럼 그냥 내장된 기본 문제 5개를 바구니에 담아!
-            return # "여기서 작업 끝! 돌아가!"
-
-        try: # "일단 공책(파일)을 열어서 읽어보려고 시도해봐(try)"
-            with open(self.state_file, 'r', encoding='utf-8') as f: # 공책을 읽기 모드('r')로 열어라
-                data = json.load(f) # JSON 번역기를 써서 글자를 파이썬 데이터로 바꿔서 data에 담아라
+        """state.json 파일에서 데이터를 불러옵니다. 실패 시 백업본, 그 다음엔 기본 데이터를 로드합니다."""
+        # 1. 시도할 파일 목록 (원본 -> 백업본 순서)
+        for target_file in [self.state_file, self.backup_file]:
+            if not os.path.exists(target_file):
+                continue
                 
-            self.best_score = data.get("best_score", 0) # 공책에서 최고 점수를 찾아서 내 점수판에 적어라
-            
-            # 공책에 적힌 퀴즈 정보들을 다시 하나씩 붕어빵(Quiz 객체)으로 구워내서 바구니(quizzes)에 담음
-            quiz_data_list = data.get("quizzes", [])
-            for q_data in quiz_data_list:
-                quiz = Quiz(q_data["question"], q_data["choices"], q_data["answer"])
-                self.quizzes.append(quiz)
+            try:
+                with open(target_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    
+                self.best_score = data.get("best_score", 0)
                 
-            print(f"📂 저장된 데이터를 불러왔습니다. (퀴즈 {len(self.quizzes)}개, 최고점수 {self.best_score}점)")
-            
-        except (json.JSONDecodeError, KeyError, Exception): # 만약 공책이 찢어지거나 망가져서 에러가 난다면
-            print("⚠️ 데이터 파일이 손상되었습니다. 기본 데이터로 복구합니다.")
-            self.quizzes = [] # 바구니를 싹 비우고
-            self.best_score = 0
-            self.load_default_quizzes() # 기본 문제로 다시 채워넣어라
+                quiz_data_list = data.get("quizzes", [])
+                self.quizzes = []
+                for q_data in quiz_data_list:
+                    quiz = Quiz(q_data["question"], q_data["choices"], q_data["answer"])
+                    self.quizzes.append(quiz)
+                    
+                print(f"📂 {target_file}에서 데이터를 성공적으로 불러왔습니다. (퀴즈 {len(self.quizzes)}개, 최고점수 {self.best_score}점)")
+                return # 성공했으니 멈추고 돌아가!
+                
+            except (json.JSONDecodeError, KeyError, Exception):
+                print(f"⚠️ {target_file} 파일이 손상되었습니다. 다음 복구 단계를 시도합니다.")
+                
+        # 2. 원본과 백업본이 모두 없거나 망가졌을 때 (최후의 보루)
+        print("⚠️ 읽을 수 있는 저장 데이터가 없어 기본 퀴즈로 복구합니다.")
+        self.quizzes = []
+        self.best_score = 0
+        self.load_default_quizzes()
 
     def save_state(self): # '현재 기록을 공책에 쓰기' 기능
         """현재 퀴즈 목록과 최고 점수를 state.json에 저장합니다."""
@@ -73,6 +80,10 @@ class QuizGame: # "이번엔 'QuizGame'이라는 게임 전체를 관리하는 �
             })
             
         try: # "포장한 걸 공책(파일)에 쓰려고 시도해봐(try)"
+            # 쓰기 전에 기존 정상 파일이 있다면 백업본으로 복사해둠 (백업 훅)
+            if os.path.exists(self.state_file):
+                shutil.copy2(self.state_file, self.backup_file)
+                
             with open(self.state_file, 'w', encoding='utf-8') as f: # 쓰기 모드('w')로 공책을 엶 (기존 내용 덮어씀)
                 json.dump(data, f, ensure_ascii=False, indent=4) # 예쁜 포맷(indent=4)으로 파일에 씀
             print("💾 (System) 변경된 데이터가 성공적으로 저장되었습니다.")
@@ -101,29 +112,16 @@ class QuizGame: # "이번엔 'QuizGame'이라는 게임 전체를 관리하는 �
         for idx, quiz in enumerate(self.quizzes, 1): # 바구니에서 문제를 하나씩 순서대로 꺼내옴
             quiz.display() # 꺼내온 붕어빵(퀴즈)의 '화면에 보여주기' 기능 실행
             
-            while True: # "사용자가 제대로 된 숫자를 입력할 때까지 계속 물어봐!"
-                try:
-                    user_input = input("\n정답 입력: ").strip()
-                    if not user_input:
-                        print("⚠️ 입력값이 없습니다. 숫자를 입력해주세요.")
-                        continue
-                    
-                    answer_num = int(user_input)
-                    if answer_num < 1 or answer_num > 4:
-                        print("⚠️ 1에서 4 사이의 숫자를 입력해주세요.")
-                        continue
-                        
-                    if quiz.check_answer(answer_num): # "내가 입력한 번호가 정답인지 확인해줘!"
-                        print("✅ 정답입니다!")
-                        score += 1 # 점수 1점 획득!
-                    else:
-                        print(f"❌ 오답입니다! (정답: {quiz.answer}번)")
-                    
-                    print("-" * 40)
-                    break # "제대로 입력 받았으니 이 무한 반복에서 탈출해서 다음 문제로 넘어가라!"
-                    
-                except ValueError:
-                    print("⚠️ 잘못된 입력입니다. 숫자로만 입력해주세요.")
+            # helpers 모듈을 사용하여 1~4 사이의 숫자만 안전하게 받음 (책임 분리)
+            answer_num = read_int("\n정답 입력 (1-4): ", 1, 4)
+            
+            if quiz.check_answer(answer_num): # "내가 입력한 번호가 정답인지 확인해줘!"
+                print("✅ 정답입니다!")
+                score += 1 # 점수 1점 획득!
+            else:
+                print(f"❌ 오답입니다! (정답: {quiz.answer}번)")
+            
+            print("-" * 40)
                     
         print("\n" + "="*40)
         print(f"🏆 결과: {len(self.quizzes)}문제 중 {score}문제 정답! ({(score/len(self.quizzes))*100:.0f}점)")
@@ -138,33 +136,16 @@ class QuizGame: # "이번엔 'QuizGame'이라는 게임 전체를 관리하는 �
         """새로운 퀴즈를 입력받고 목록에 추가합니다."""
         print("\n📌 새로운 퀴즈를 추가합니다.")
         
-        question = input("\n문제를 입력하세요: ").strip()
-        if not question:
-            print("⚠️ 빈 값은 입력할 수 없습니다. 퀴즈 추가를 취소합니다.")
-            return
+        # helpers 모듈을 사용하여 빈 값 입력을 철저히 차단
+        question = read_nonempty("\n문제를 입력하세요: ")
             
         choices = []
         for i in range(1, 5): # 1번부터 4번까지 4번 반복해서 선택지를 물어봄
-            choice = input(f"선택지 {i}: ").strip()
-            if not choice:
-                print("⚠️ 빈 값은 입력할 수 없습니다. 퀴즈 추가를 취소합니다.")
-                return
+            choice = read_nonempty(f"선택지 {i}: ")
             choices.append(choice) # 물어본 선택지를 빈 바구니(choices)에 차곡차곡 담음
             
-        while True:
-            try:
-                answer_str = input("정답 번호 (1-4): ").strip()
-                if not answer_str:
-                    print("⚠️ 입력값이 없습니다. 1-4 사이의 숫자를 입력해주세요.")
-                    continue
-                    
-                answer = int(answer_str)
-                if answer < 1 or answer > 4:
-                    print("⚠️ 1에서 4 사이의 숫자를 입력해주세요.")
-                    continue
-                break
-            except ValueError:
-                print("⚠️ 잘못된 입력입니다. 숫자로만 입력해주세요.")
+        # helpers 모듈을 사용하여 1~4 사이의 숫자만 엄격하게 받음
+        answer = read_int("정답 번호 (1-4): ", 1, 4)
                 
         # 사용자가 입력한 재료들로 새로운 Quiz 붕어빵을 하나 찍어냄
         new_quiz = Quiz(question, choices, answer) 
